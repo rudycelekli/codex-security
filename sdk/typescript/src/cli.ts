@@ -2680,7 +2680,7 @@ export async function main(
           const message =
             progress.phase === "evidence"
               ? "Reading selected finding evidence."
-              : `Matching ${progress.afterFindings} findings against ${progress.beforeIssues} known issues${(progress.pages ?? 1) > 1 ? ` (catalogue page ${progress.page}/${progress.pages})` : ""}.`;
+              : `Matching ${formatItemCount(progress.afterFindings, "finding")} against ${formatItemCount(progress.beforeIssues, "known issue")}${(progress.pages ?? 1) > 1 ? ` (catalogue page ${progress.page}/${progress.pages})` : ""}.`;
           if (message === previousProgress) return;
           previousProgress = message;
           errorOutput.write(`codex-security: ${message}\n`);

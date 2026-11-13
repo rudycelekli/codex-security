@@ -872,6 +872,34 @@ describe("CLI workbench", () => {
     },
   );
 
+  test("uses the singular for one finding and one known issue in matching progress", async () => {
+    const { stderr, runCli } = createCliTest(main, { stderr: true });
+
+    expect(
+      await runCli(
+        ["scans", "match", "before", "after", "--json"],
+        dependencies({
+          onWorkbench: (args): JsonObject =>
+            args[0] === "compare-scans"
+              ? { matchingInputs: { before: [], after: [] } }
+              : { summary: { persisting: 1 } },
+          onMatch: async (_input, options) => {
+            options?.onProgress?.({
+              phase: "catalogue",
+              beforeFindings: 1,
+              beforeIssues: 1,
+              afterFindings: 1,
+            });
+            return { matches: [], uncertain: [] };
+          },
+        }),
+      ),
+    ).toBe(0);
+    expect(stderr.text()).toContain(
+      "codex-security: Matching 1 finding against 1 known issue.\n",
+    );
+  });
+
   test.each([
     [["before", "after"], "SIGINT", 130],
     [["--all"], "SIGTERM", 143],
