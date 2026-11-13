@@ -63,6 +63,29 @@ test("retains native triage and ordered flow with snippets for each CxSAST resul
   expect(JSON.stringify(evidence)).not.toContain("report owner");
 });
 
+test("names the numeric CxSAST triage state of each result", () => {
+  const triaged = (state: string) =>
+    normalize(
+      report(
+        result(13).replace(
+          'FalsePositive="True" state="1"',
+          `FalsePositive="False" state="${state}"`,
+        ),
+      ),
+    ).findings[0]!.evidence;
+  expect(triaged("0").details?.scanner_verdict).toBe("To Verify");
+  expect(triaged("1").details?.scanner_verdict).toBe("Not Exploitable");
+  expect(triaged("2").details?.scanner_verdict).toBe("Confirmed");
+  expect(triaged("3").details?.scanner_verdict).toBe("Urgent");
+  expect(triaged("4").details?.scanner_verdict).toBe(
+    "Proposed Not Exploitable",
+  );
+  // Custom states keep their ID, and the source record keeps the native value.
+  const custom = triaged("7");
+  expect(custom.details?.scanner_verdict).toBe("7");
+  expect(triaged("2").source_data).toMatchObject({ result: { state: "2" } });
+});
+
 test("retains optional CxSAST project and team names without changing occurrence IDs", () => {
   const xml = report(result(13));
   const original = normalize(xml);

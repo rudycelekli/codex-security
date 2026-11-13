@@ -45,6 +45,16 @@ interface Row extends Record<string, unknown> {
   nodes: Record<string, unknown>[];
 }
 
+// CxSAST XML reports write each result's triage state as its numeric ID.
+// Custom states keep their reported ID.
+const resultStates = new Map([
+  ["0", "To Verify"],
+  ["1", "Not Exploitable"],
+  ["2", "Confirmed"],
+  ["3", "Urgent"],
+  ["4", "Proposed Not Exploitable"],
+]);
+
 const viewerPath = "/cxwebclient/viewermain.aspx";
 
 function viewerLink(value: unknown) {
@@ -233,7 +243,7 @@ export function normalizeCheckmarxXml(
             verdict:
               result["FalsePositive"]?.toLowerCase() === "true"
                 ? "False positive"
-                : result["state"],
+                : (resultStates.get(result["state"] ?? "") ?? result["state"]),
             cwe: query["cweId"],
             sourceData:
               !row["instance"] && instance ? { ...row, instance } : row,
